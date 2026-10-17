@@ -183,6 +183,18 @@ export default function App() {
 
   const currentTheme = units.theme || 'dark';
 
+  // Synchronize data-theme on documentElement for global CSS variables and full theme consistency
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    if (currentTheme === 'light') {
+      document.body.classList.remove('bg-slate-950', 'text-slate-100');
+      document.body.classList.add('bg-[#F4F8FC]', 'text-[#172B4D]');
+    } else {
+      document.body.classList.remove('bg-[#F4F8FC]', 'text-[#172B4D]');
+      document.body.classList.add('bg-slate-950', 'text-slate-100');
+    }
+  }, [currentTheme]);
+
   return (
     <div
       data-theme={currentTheme}
@@ -198,6 +210,14 @@ export default function App() {
         reducedMotion={units.reducedMotion}
         isDarkMode={currentTheme === 'dark'}
       />
+
+      {/* Skip to Main Content Link for Keyboard and Screen-Reader Users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-cyan-500 focus:text-slate-950 focus:font-extrabold focus:rounded-xl focus:shadow-2xl focus:ring-2 focus:ring-white transition-all"
+      >
+        Skip to main content
+      </a>
 
       {/* Main Container */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 md:py-8 relative z-10">
@@ -338,7 +358,7 @@ export default function App() {
             </div>
           </div>
         ) : weather ? (
-          <main className="transition-all duration-200">
+          <main id="main-content" tabIndex="-1" className="transition-all duration-200 outline-none">
             {/* VIEW 1: DASHBOARD OVERVIEW */}
             {activeTab === 'dashboard' && (
               <div className="space-y-6 animate-in fade-in duration-200">

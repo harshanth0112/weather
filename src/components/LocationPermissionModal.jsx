@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Navigation, Check, Search, X, Loader2 } from 'lucide-react';
 import { searchCities } from '../services/weatherApi';
 
 export default function LocationPermissionModal({ isOpen, onClose, onConfirmLocation, defaultCity }) {
-  if (!isOpen) return null;
+  // Close on Escape key press for keyboard accessibility
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   const [detecting, setDetecting] = useState(false);
   const [detectedCity, setDetectedCity] = useState(null);
@@ -11,6 +19,8 @@ export default function LocationPermissionModal({ isOpen, onClose, onConfirmLoca
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
+
+  if (!isOpen) return null;
 
   // 1. Detect device GPS location via browser API
   const handleDetectGPS = () => {
@@ -104,7 +114,12 @@ export default function LocationPermissionModal({ isOpen, onClose, onConfirmLoca
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="location-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200"
+    >
       <div className="w-full max-w-lg rounded-3xl glass-panel p-6 md:p-8 border border-white/20 shadow-2xl relative max-h-[90vh] overflow-y-auto scrollbar-thin">
         {/* Header */}
         <div className="flex items-start justify-between pb-4 border-b border-black/10 dark:border-white/10">
@@ -113,7 +128,7 @@ export default function LocationPermissionModal({ isOpen, onClose, onConfirmLoca
               <MapPin className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl font-extrabold text-white tracking-tight">Set Default Location</h3>
+              <h2 id="location-modal-title" className="text-xl font-extrabold text-white tracking-tight">Set Default Location</h2>
               <p className="text-xs text-slate-300 mt-0.5">
                 Choose your local city for automatic forecasts and atmospheric data
               </p>

@@ -82,7 +82,7 @@ export default function AirQualityAlerts({ city, weather }) {
         <div>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <h3 className="text-xl font-bold text-white tracking-tight">Air Quality Index</h3>
+              <h2 className="text-xl font-bold text-white tracking-tight">Air Quality Index</h2>
               <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/25 font-semibold">
                 Open-Meteo AQ
               </span>
@@ -181,7 +181,7 @@ export default function AirQualityAlerts({ city, weather }) {
         <div>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-xl font-bold text-white tracking-tight">Weather Risk Assessment</h3>
+              <h2 className="text-xl font-bold text-white tracking-tight">Weather Risk Assessment</h2>
               <p className="text-xs text-slate-400">Model-derived indicators vs official meteorological bulletins</p>
             </div>
             <AlertTriangle className="w-5 h-5 text-amber-400" />

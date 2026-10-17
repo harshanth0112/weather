@@ -129,27 +129,29 @@ export default function ForecastSection({ weather, units }) {
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-1 p-1 rounded-xl weather-subcard self-stretch sm:self-auto justify-center">
+        <div className="inline-flex items-center gap-1 p-1 rounded-xl weather-subcard self-stretch sm:self-auto justify-center" role="group" aria-label="Forecast timeframe selection">
           <button
             onClick={() => setActiveTab('hourly')}
+            aria-pressed={activeTab === 'hourly'}
             className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               activeTab === 'hourly'
                 ? 'bg-cyan-500 text-slate-950 font-bold shadow-sm shadow-cyan-500/20'
                 : 'text-slate-300 hover:text-white'
             }`}
           >
-            <Clock className="w-3.5 h-3.5" />
+            <Clock className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Hourly (24h)</span>
           </button>
           <button
             onClick={() => setActiveTab('daily')}
+            aria-pressed={activeTab === 'daily'}
             className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               activeTab === 'daily'
                 ? 'bg-cyan-500 text-slate-950 font-bold shadow-sm shadow-cyan-500/20'
                 : 'text-slate-300 hover:text-white'
             }`}
           >
-            <Calendar className="w-3.5 h-3.5" />
+            <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
             <span>7-Day Extended</span>
           </button>
         </div>

@@ -19,7 +19,7 @@ export const NAVIGATION_TABS = [
 
 export function DesktopNavigation({ activeTab, onSelectTab }) {
   return (
-    <nav aria-label="Main Application Views" className="hidden md:flex items-center gap-1.5 p-1.5 rounded-2xl glass-panel border border-white/10 mb-6 max-w-fit mx-auto shadow-xl">
+    <nav role="tablist" aria-label="Main Application Views" className="hidden md:flex items-center gap-1.5 p-1.5 rounded-2xl glass-panel border border-white/10 mb-6 max-w-fit mx-auto shadow-xl">
       {NAVIGATION_TABS.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
@@ -58,7 +58,7 @@ export function MobileBottomNavigation({ activeTab, onSelectTab }) {
   };
 
   return (
-    <nav aria-label="Mobile Navigation" className="md:hidden fixed bottom-0 inset-x-0 z-50 glass-panel border-t pt-2 safe-bottom-nav px-1.5 flex items-center justify-around shadow-2xl backdrop-blur-2xl">
+    <nav role="tablist" aria-label="Mobile Navigation" className="md:hidden fixed bottom-0 inset-x-0 z-50 glass-panel border-t pt-2 safe-bottom-nav px-1.5 flex items-center justify-around shadow-2xl backdrop-blur-2xl">
       {NAVIGATION_TABS.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;

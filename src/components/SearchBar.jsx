@@ -92,6 +92,10 @@ export default function SearchBar({
           <input
             type="text"
             id="city-search-input"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded={isOpen}
+            aria-controls="city-search-results"
             aria-label="Search city, region, or country"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -131,7 +135,12 @@ export default function SearchBar({
 
       {/* Dropdown Results */}
       {isOpen && (
-        <div className="absolute top-full mt-2 w-full rounded-2xl glass-panel border shadow-2xl z-50 overflow-hidden divide-y divide-white/10 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div
+          id="city-search-results"
+          role="listbox"
+          aria-label="City search suggestions"
+          className="absolute top-full mt-2 w-full rounded-2xl glass-panel border shadow-2xl z-50 overflow-hidden divide-y divide-white/10 animate-in fade-in slide-in-from-top-2 duration-150"
+        >
           {error && <div className="p-3 text-sm text-rose-400">{error}</div>}
 
           {results.length === 0 && !loading && !error && (
@@ -141,6 +150,8 @@ export default function SearchBar({
           {results.map((item) => (
             <button
               key={`${item.id}-${item.latitude}-${item.longitude}`}
+              role="option"
+              aria-selected={false}
               onClick={() => handleSelect(item)}
               className="w-full text-left px-4 py-3 hover:bg-white/10 flex items-center justify-between transition-colors group"
             >

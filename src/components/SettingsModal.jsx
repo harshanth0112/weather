@@ -1,16 +1,31 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Sliders, Sun, Moon, MapPin } from 'lucide-react';
 
 export default function SettingsModal({ isOpen, onClose, units, onChangeUnits, city, onOpenLocationModal }) {
+  // Close on Escape key for keyboard accessibility
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200"
+    >
       <div className="w-full max-w-md rounded-3xl glass-panel p-6 border border-white/20 shadow-2xl relative max-h-[90vh] overflow-y-auto scrollbar-thin">
         <div className="flex items-center justify-between pb-4 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-cyan-400" />
-            <h3 className="text-xl font-bold text-white tracking-tight">Preferences & Settings</h3>
+            <Sliders className="w-5 h-5 text-cyan-400" aria-hidden="true" />
+            <h2 id="settings-modal-title" className="text-xl font-bold text-white tracking-tight">Preferences & Settings</h2>
           </div>
           <button
             onClick={onClose}
