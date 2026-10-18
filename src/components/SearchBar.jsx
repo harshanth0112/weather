@@ -10,6 +10,7 @@ export default function SearchBar({
   isFavorite,
   onGeoLocate,
   geoLoading = false,
+  hideInlineButtonsMobile = false,
 }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -115,7 +116,7 @@ export default function SearchBar({
           disabled={geoLoading}
           title="Use my current location"
           aria-label="Use my current GPS location"
-          className="p-3 rounded-2xl glass-panel text-slate-300 hover:text-cyan-400 hover:border-cyan-400/50 transition-all flex items-center justify-center shrink-0 disabled:opacity-50"
+          className={`${hideInlineButtonsMobile ? 'hidden md:flex' : 'flex'} p-3 rounded-2xl glass-panel text-slate-300 hover:text-cyan-400 hover:border-cyan-400/50 transition-all items-center justify-center shrink-0 disabled:opacity-50`}
         >
           <MapPin className={`w-5 h-5 ${geoLoading ? 'animate-spin text-emerald-400' : ''}`} aria-hidden="true" />
         </button>
@@ -126,7 +127,7 @@ export default function SearchBar({
             onClick={() => onToggleFavorite(currentCity)}
             title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
             aria-label={isFavorite ? `Remove ${currentCity.name} from favorites` : `Add ${currentCity.name} to favorites`}
-            className="p-3 rounded-2xl glass-panel text-slate-300 hover:text-amber-400 transition-all flex items-center justify-center shrink-0"
+            className={`${hideInlineButtonsMobile ? 'hidden md:flex' : 'flex'} p-3 rounded-2xl glass-panel text-slate-300 hover:text-amber-400 transition-all items-center justify-center shrink-0`}
           >
             <Star className={`w-5 h-5 ${isFavorite ? 'fill-amber-400 text-amber-400' : ''}`} aria-hidden="true" />
           </button>

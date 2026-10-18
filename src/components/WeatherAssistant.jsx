@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Bot,
   Send,
@@ -8,12 +8,21 @@ import {
   Thermometer,
   Cpu,
   Loader2,
+  MapPin,
+  ArrowDown,
 } from 'lucide-react';
 import { askGroqAssistant } from '../services/groqApi';
 import { formatTemperature } from '../utils/weatherCodes';
 import FormattedAIMessage from './FormattedAIMessage';
 
-export default function WeatherAssistant({ city, weather, airQuality, units, groqKey }) {
+export default function WeatherAssistant({
+  city,
+  weather,
+  airQuality,
+  units,
+  groqKey,
+  onOpenMap,
+}) {
   const [messages, setMessages] = useState([
     {
       sender: 'ai',
@@ -22,6 +31,35 @@ export default function WeatherAssistant({ city, weather, airQuality, units, gro
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isScrolledUp, setIsScrolledUp] = useState(false);
+
+  const messagesContainerRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const shouldAutoScrollRef = useRef(true);
+
+  // Check scroll position to determine if user manually scrolled up
+  const handleScroll = useCallback(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    // Consider scrolled up if more than 50px away from bottom
+    const scrolledUp = distanceFromBottom > 50;
+    setIsScrolledUp(scrolledUp);
+    shouldAutoScrollRef.current = !scrolledUp;
+  }, []);
+
+  const scrollToBottom = useCallback((behavior = 'smooth') => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior, block: 'end' });
+    }
+  }, []);
+
+  // Auto-scroll on new messages or during loading
+  useEffect(() => {
+    if (shouldAutoScrollRef.current) {
+      scrollToBottom('smooth');
+    }
+  }, [messages, loading, scrollToBottom]);
 
   // Rule-based fallback weather reasoning engine
   const generateRuleBasedAnswer = (query) => {
@@ -92,6 +130,10 @@ export default function WeatherAssistant({ city, weather, airQuality, units, gro
     setMessages((prev) => [...prev, userMsg]);
     if (!textToSend) setInput('');
 
+    // Force auto-scroll to bottom when user sends a new message
+    shouldAutoScrollRef.current = true;
+    setTimeout(() => scrollToBottom('smooth'), 50);
+
     // If Groq API key is configured, use Groq Cloud LLM
     if (groqKey && groqKey.trim()) {
       setLoading(true);
@@ -128,10 +170,10 @@ export default function WeatherAssistant({ city, weather, airQuality, units, gro
   ];
 
   return (
-    <div className="w-full rounded-3xl glass-panel p-4 sm:p-6 md:p-8 backdrop-blur-xl border border-white/10 shadow-2xl relative overflow-hidden flex flex-col justify-between min-h-[480px] sm:min-h-[540px] md:min-h-[580px]">
-      <div>
-        {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-black/10 dark:border-white/10 mb-3 sm:mb-4">
+    <div className="w-full rounded-3xl glass-panel p-4 sm:p-6 md:p-8 backdrop-blur-xl border border-white/10 shadow-2xl relative overflow-hidden flex flex-col h-[560px] sm:h-[620px] md:h-[680px] max-h-[85vh]">
+      {/* Header Bar - Fixed Top */}
+      <div className="shrink-0 pb-3 sm:pb-4 border-b border-black/10 dark:border-white/10 mb-3 sm:mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 sm:p-3 rounded-2xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 shadow-lg shadow-cyan-500/10 shrink-0">
               <Bot className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -151,53 +193,73 @@ export default function WeatherAssistant({ city, weather, airQuality, units, gro
                   </span>
                 )}
               </div>
-              <p className="text-[11px] sm:text-xs text-slate-300 mt-0.5">
-                Contextually grounded in real Open-Meteo observations for {city.name}
-              </p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-[11px] sm:text-xs text-slate-300">
+                  Contextually grounded in real observations for <strong className="text-cyan-300 font-semibold">{city.name}</strong>
+                </p>
+                {onOpenMap && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenMap(city)}
+                    title={`Open map view for ${city.name}`}
+                    aria-label={`Open interactive map for ${city.name}`}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-cyan-500/15 text-cyan-300 hover:bg-cyan-500/25 border border-cyan-400/30 text-[10px] sm:text-[11px] font-semibold transition-all focus-visible:ring-2 focus-visible:ring-cyan-400"
+                  >
+                    <MapPin className="w-3 h-3 text-cyan-400 shrink-0" aria-hidden="true" />
+                    <span>View on Map</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
           {messages.length > 1 && (
             <button
-              onClick={() =>
+              onClick={() => {
                 setMessages([
                   {
                     sender: 'ai',
                     text: `Hello! I am your Atmos Weather Advisor. Ask me anything about current conditions, forecasts, air quality, or outdoor recommendations for ${city.name}.`,
                   },
-                ])
-              }
+                ]);
+                setIsScrolledUp(false);
+              }}
               className="text-xs text-slate-400 hover:text-cyan-300 py-1 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors self-start sm:self-auto border border-white/5"
             >
               Reset Chat
             </button>
           )}
         </div>
+      </div>
 
-        {/* Quick Suggestion Chips */}
-        <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-          {quickPrompts.map((prompt, i) => {
-            const Icon = prompt.icon;
-            return (
-              <button
-                key={i}
-                onClick={() => handleSend(prompt.label)}
-                disabled={loading}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl weather-subcard text-[11px] sm:text-xs text-slate-200 transition-all active:scale-95 disabled:opacity-50"
-              >
-                <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400 shrink-0" />
-                <span>{prompt.label}</span>
-              </button>
-            );
-          })}
-        </div>
+      {/* Quick Suggestion Chips - Fixed Subheader */}
+      <div className="shrink-0 flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+        {quickPrompts.map((prompt, i) => {
+          const Icon = prompt.icon;
+          return (
+            <button
+              key={i}
+              onClick={() => handleSend(prompt.label)}
+              disabled={loading}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl weather-subcard text-[11px] sm:text-xs text-slate-200 transition-all active:scale-95 disabled:opacity-50"
+            >
+              <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400 shrink-0" />
+              <span>{prompt.label}</span>
+            </button>
+          );
+        })}
+      </div>
 
-        {/* Messages Chat Log */}
+      {/* Messages Chat Log - Constrained scrollable body */}
+      <div className="relative flex-1 min-h-[300px] max-h-[500px] w-full mb-3 sm:mb-4 overflow-hidden rounded-2xl weather-subcard">
         <div
+          ref={messagesContainerRef}
+          onScroll={handleScroll}
           role="log"
           aria-live="polite"
           aria-label="Weather AI conversation history"
-          className="h-[280px] sm:h-[320px] md:h-[360px] overflow-y-auto space-y-3 p-3 sm:p-4 rounded-2xl weather-subcard scrollbar-thin"
+          tabIndex="0"
+          className="h-full max-h-[500px] w-full overflow-y-auto space-y-3 p-3 sm:p-4 scrollbar-thin chat-scroll-area outline-none focus-visible:ring-1 focus-visible:ring-cyan-400/40"
         >
           {messages.map((msg, idx) => (
             <div
@@ -217,8 +279,20 @@ export default function WeatherAssistant({ city, weather, airQuality, units, gro
                   <div className="whitespace-pre-line">{msg.text}</div>
                 )}
                 {msg.sender === 'ai' && (
-                  <div className="text-[10px] text-slate-400 mt-2 pt-1 border-t border-black/10 dark:border-white/10 flex items-center gap-1 font-mono">
-                    {msg.isGroq ? '⚡ Groq Cloud AI' : '⚙️ Atmos Rule Reasoner'}
+                  <div className="text-[10px] text-slate-400 mt-2 pt-1 border-t border-black/10 dark:border-white/10 flex items-center justify-between gap-1 font-mono">
+                    <span>{msg.isGroq ? '⚡ Groq Cloud AI' : '⚙️ Atmos Rule Reasoner'}</span>
+                    {onOpenMap && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenMap(city)}
+                        title="View map"
+                        aria-label={`Open map for ${city.name}`}
+                        className="text-cyan-400 hover:underline flex items-center gap-0.5 ml-2 font-sans font-medium"
+                      >
+                        <MapPin className="w-2.5 h-2.5" />
+                        <span>Map</span>
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -233,17 +307,48 @@ export default function WeatherAssistant({ city, weather, airQuality, units, gro
               </div>
             </div>
           )}
+
+          {/* Anchor to scroll to */}
+          <div ref={messagesEndRef} className="h-px w-full" aria-hidden="true" />
         </div>
+
+        {/* Floating "Scroll to latest" button when user scrolled up */}
+        {isScrolledUp && (
+          <button
+            type="button"
+            onClick={() => {
+              shouldAutoScrollRef.current = true;
+              scrollToBottom('smooth');
+              setIsScrolledUp(false);
+            }}
+            aria-label="Scroll to latest messages"
+            className="absolute bottom-3 right-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/30 hover:bg-cyan-400 transition-all transform hover:scale-105 active:scale-95 animate-in fade-in"
+          >
+            <ArrowDown className="w-3.5 h-3.5" />
+            <span>Latest</span>
+          </button>
+        )}
       </div>
 
-      {/* Input Form */}
+      {/* Input Form - Fixed Bottom */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
           handleSend();
         }}
-        className="flex items-center gap-2 mt-3 sm:mt-4 pt-1 sm:pt-2"
+        className="shrink-0 flex items-center gap-2 pt-1 sm:pt-2"
       >
+        {onOpenMap && (
+          <button
+            type="button"
+            onClick={() => onOpenMap(city)}
+            title={`Open map view for ${city.name}`}
+            aria-label={`Open interactive map for ${city.name}`}
+            className="p-2.5 sm:p-3 rounded-2xl glass-panel text-slate-300 hover:text-cyan-300 hover:border-cyan-400/40 transition-all flex items-center justify-center shrink-0 border border-slate-300 dark:border-white/10"
+          >
+            <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" aria-hidden="true" />
+          </button>
+        )}
         <input
           type="text"
           id="assistant-chat-input"
@@ -266,3 +371,4 @@ export default function WeatherAssistant({ city, weather, airQuality, units, gro
     </div>
   );
 }
+

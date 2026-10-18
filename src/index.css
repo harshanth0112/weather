@@ -98,9 +98,38 @@
     bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Tabular Numerals for live weather readings */
-  .tabular-nums, .font-mono {
-    font-variant-numeric: tabular-nums;
+  /* Math Bold Digits System for all numbers and measurements across the website */
+  :root {
+    --font-digits: 'JetBrains Mono', 'Outfit', 'Inter', monospace;
+  }
+
+  /* Universal Math Bold Digits styling for all numbers and tabular metrics */
+  .tabular-nums, .font-mono, [class*="tabular-nums"], [class*="font-mono"] {
+    font-family: var(--font-digits) !important;
+    font-variant-numeric: tabular-nums lining-nums diagonal-fractions;
+    font-feature-settings: "tnum" 1, "zero" 1, "cv01" 1, "cv02" 1;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  /* Ensure main temperature displays, metric cards, clocks, and charts use Math Bold Digits */
+  .gradient-text-temperature {
+    font-family: var(--font-digits) !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.03em;
+  }
+
+  .weather-subcard .text-2xl,
+  .weather-subcard .text-3xl,
+  .weather-subcard .text-xl,
+  .weather-card .text-4xl,
+  .weather-card .text-5xl,
+  .weather-card .text-6xl,
+  .weather-card .text-7xl,
+  .weather-card .text-8xl,
+  .recharts-text {
+    font-family: var(--font-digits);
+    font-feature-settings: "tnum" 1, "zero" 1;
   }
 }
 
@@ -415,6 +444,57 @@
   max-width: 85%;
   backdrop-filter: blur(10px);
 }
+
+/* Custom smooth scrollbar utilities */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.5) rgba(255, 255, 255, 0.05);
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 9999px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.45);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.75);
+}
+
+[data-theme="light"] .scrollbar-thin {
+  scrollbar-color: rgba(2, 132, 199, 0.5) rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(2, 132, 199, 0.45);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(2, 132, 199, 0.75);
+}
+
+.chat-scroll-area {
+  overflow-y: scroll !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
 
 /* =========================================
    SCOPED LIGHT MODE READABILITY & CONTRAST

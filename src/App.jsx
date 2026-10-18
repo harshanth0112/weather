@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   CloudSun,
   MapPin,
@@ -9,6 +9,7 @@ import {
   LocateFixed,
   Bot,
   Sparkles,
+  MoreVertical,
 } from 'lucide-react';
 
 import WeatherBackground from './components/WeatherBackground';
@@ -56,6 +57,30 @@ export default function App() {
   const [previewTheme, setPreviewTheme] = useState(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef(null);
+
+  // Close mobile overflow menu on click outside or escape key
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
+        setIsMobileMenuOpen(false);
+      }
+    }
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    }
+    if (isMobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMobileMenuOpen]);
 
   // Groq API Key: Checks localStorage first, then falls back to VITE_GROQ_API_KEY from .env
   const [groqKey, setGroqKey] = useState(() => {
@@ -222,8 +247,12 @@ export default function App() {
       {/* Main Container */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 md:py-8 relative z-10">
         {/* Top Header Navbar */}
-        <header className="flex flex-col md:flex-row items-center justify-between gap-4 pb-4">
-          <div className="flex items-center gap-3 self-start md:self-auto cursor-pointer" onClick={() => setActiveTab('dashboard')}>
+        <header className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 md:gap-4 pb-4">
+          {/* Logo & Brand */}
+          <div
+            className="flex items-center gap-3 self-start md:self-auto cursor-pointer select-none"
+            onClick={() => setActiveTab('dashboard')}
+          >
             <div className="p-2.5 rounded-2xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 shadow-lg shadow-cyan-500/10">
               <CloudSun className="w-7 h-7" />
             </div>
@@ -237,22 +266,152 @@ export default function App() {
             </div>
           </div>
 
-          {/* Autocomplete City Search */}
-          <SearchBar
-            onSelectCity={(newCity) => {
-              setCity(newCity);
-              setPreviewTheme(null); // Return to auto real weather mode whenever city changes
-            }}
-            currentCity={city}
-            favorites={favorites}
-            onToggleFavorite={handleToggleFavorite}
-            isFavorite={isFavorite}
-            onGeoLocate={handleGeoLocate}
-            geoLoading={geoLoading}
-          />
+          {/* Search bar + Mobile Three-dot Menu wrapper */}
+          <div className="flex items-center gap-2 w-full md:w-auto md:flex-1 md:max-w-xl">
+            <div className="flex-1 min-w-0">
+              <SearchBar
+                onSelectCity={(newCity) => {
+                  setCity(newCity);
+                  setPreviewTheme(null); // Return to auto real weather mode whenever city changes
+                }}
+                currentCity={city}
+                favorites={favorites}
+                onToggleFavorite={handleToggleFavorite}
+                isFavorite={isFavorite}
+                onGeoLocate={handleGeoLocate}
+                geoLoading={geoLoading}
+                hideInlineButtonsMobile={true}
+              />
+            </div>
 
-          {/* Top Actions: Geolocate, Settings and Refresh */}
-          <div className="flex items-center gap-2 self-end md:self-auto">
+            {/* Mobile Three-Dot Overflow Menu Button */}
+            <div className="relative md:hidden shrink-0" ref={mobileMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                aria-label="More options"
+                aria-expanded={isMobileMenuOpen}
+                aria-haspopup="true"
+                className={`w-11 h-11 rounded-2xl glass-panel flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                  isMobileMenuOpen
+                    ? 'text-cyan-400 border-cyan-400/60 bg-white/15 shadow-lg shadow-cyan-500/20'
+                    : 'text-slate-300 hover:text-white hover:border-cyan-400/40'
+                }`}
+              >
+                <MoreVertical className="w-5 h-5" aria-hidden="true" />
+              </button>
+
+              {/* Overflow Dropdown Popover */}
+              {isMobileMenuOpen && (
+                <div
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-label="Secondary actions menu"
+                  className="absolute right-0 top-full mt-2 w-64 rounded-2xl glass-panel border border-white/20 bg-slate-900/95 backdrop-blur-xl shadow-2xl z-50 p-2 divide-y divide-white/10 animate-in fade-in zoom-in-95 duration-150"
+                >
+                  <div className="py-1">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setActiveTab('map');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold text-slate-200 hover:text-cyan-300 hover:bg-white/10 transition-colors focus:outline-none focus:bg-white/15"
+                    >
+                      <MapPin className="w-4 h-4 text-cyan-400 shrink-0" aria-hidden="true" />
+                      <div className="flex-1">
+                        <div>Location & Map</div>
+                        <div className="text-[11px] text-slate-400 font-normal">Open interactive radar map</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        handleToggleFavorite(city);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold text-slate-200 hover:text-amber-300 hover:bg-white/10 transition-colors focus:outline-none focus:bg-white/15"
+                    >
+                      <Star
+                        className={`w-4 h-4 shrink-0 ${isFavorite ? 'fill-amber-400 text-amber-400' : 'text-slate-400'}`}
+                        aria-hidden="true"
+                      />
+                      <div className="flex-1">
+                        <div>{isFavorite ? 'Remove Favorite' : 'Save as Favorite'}</div>
+                        <div className="text-[11px] text-slate-400 font-normal">
+                          {isFavorite ? `Remove ${city.name}` : `Save ${city.name} to list`}
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={geoLoading}
+                      onClick={() => {
+                        handleGeoLocate();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold text-slate-200 hover:text-emerald-300 hover:bg-white/10 transition-colors disabled:opacity-50 focus:outline-none focus:bg-white/15"
+                    >
+                      <LocateFixed
+                        className={`w-4 h-4 shrink-0 ${geoLoading ? 'animate-spin text-emerald-400' : 'text-emerald-400'}`}
+                        aria-hidden="true"
+                      />
+                      <div className="flex-1">
+                        <div>Current Location</div>
+                        <div className="text-[11px] text-slate-400 font-normal">Use device GPS coordinates</div>
+                      </div>
+                    </button>
+                  </div>
+
+                  <div className="py-1">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={loading}
+                      onClick={() => {
+                        loadWeather(city);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold text-slate-200 hover:text-cyan-300 hover:bg-white/10 transition-colors disabled:opacity-50 focus:outline-none focus:bg-white/15"
+                    >
+                      <RefreshCw
+                        className={`w-4 h-4 shrink-0 ${loading ? 'animate-spin text-cyan-400' : 'text-cyan-400'}`}
+                        aria-hidden="true"
+                      />
+                      <div className="flex-1">
+                        <div>Refresh Weather</div>
+                        <div className="text-[11px] text-slate-400 font-normal">Reload latest observation</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsSettingsOpen(true);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold text-slate-200 hover:text-cyan-300 hover:bg-white/10 transition-colors focus:outline-none focus:bg-white/15"
+                    >
+                      <Sliders className="w-4 h-4 text-slate-300 shrink-0" aria-hidden="true" />
+                      <div className="flex-1">
+                        <div>Settings & Preferences</div>
+                        <div className="text-[11px] text-slate-400 font-normal">Units, theme & Groq key</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Desktop Top Actions: Geolocate, Settings and Refresh */}
+          <div className="hidden md:flex items-center gap-2 self-end md:self-auto">
             <button
               onClick={handleGeoLocate}
               disabled={geoLoading}
@@ -377,7 +536,17 @@ export default function App() {
             {/* VIEW 3: INTERACTIVE LEAFLET MAP */}
             {activeTab === 'map' && (
               <div className="space-y-6 animate-in fade-in duration-200">
-                <WeatherMap city={city} units={units} onSelectCoordinates={(coords) => console.log(coords)} />
+                <WeatherMap
+                  city={city}
+                  units={units}
+                  favorites={favorites}
+                  onSelectCity={(newCity) => {
+                    setCity(newCity);
+                    setPreviewTheme(null);
+                    setActiveTab('dashboard');
+                  }}
+                  onSelectCoordinates={(coords) => console.log('Selected coordinates:', coords)}
+                />
               </div>
             )}
 
@@ -398,6 +567,12 @@ export default function App() {
                   units={units}
                   groqKey={groqKey}
                   onSaveGroqKey={(key) => setGroqKey(key)}
+                  onOpenMap={(targetCity) => {
+                    if (targetCity) {
+                      setCity(targetCity);
+                    }
+                    setActiveTab('map');
+                  }}
                 />
               </div>
             )}

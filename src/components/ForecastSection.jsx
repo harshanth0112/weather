@@ -30,7 +30,9 @@ import {
   formatTemperature,
   formatPrecipitation,
   formatWindSpeed,
+  getHourlyGradient,
 } from '../utils/weatherCodes';
+import { getWeatherIconComponent } from './WeatherIcons';
 
 const ICON_MAP = {
   Sun,
@@ -206,24 +208,32 @@ export default function ForecastSection({ weather, units }) {
             </div>
           </div>
 
-          {/* Horizontal Hourly Cards Carousel */}
+          {/* Horizontal Hourly Cards Carousel with SVG Icons & Coordinated Gradients */}
           <div className="flex gap-3 overflow-x-auto pb-3 pt-1 snap-x scrollbar-thin">
             {hourlyData.map((item, index) => {
-              const IconComp = ICON_MAP[item.condition.iconName] || Cloud;
+              const SvgIcon = getWeatherIconComponent(item.code, item.isDay);
+              const cardGradientClass = getHourlyGradient(item.code, item.isDay, units.theme || 'dark');
+
               return (
                 <div
                   key={index}
-                  className="weather-subcard flex flex-col items-center justify-between p-3.5 min-w-[92px] snap-start shrink-0"
+                  className={`flex flex-col items-center justify-between p-3.5 min-w-[96px] rounded-2xl border snap-start shrink-0 backdrop-blur-md shadow-lg transition-all duration-300 hover:scale-[1.03] hover:-translate-y-0.5 ${cardGradientClass}`}
                 >
-                  <span className="text-xs font-semibold text-slate-300 font-mono tabular-nums">{item.time}</span>
-                  <div className="my-2.5 p-2 rounded-xl bg-black/10 dark:bg-slate-800/40">
-                    <IconComp className="w-5 h-5 text-cyan-400" />
+                  <span className="text-xs font-bold text-slate-200 font-mono tabular-nums tracking-tight">
+                    {item.time}
+                  </span>
+
+                  {/* High Quality Vector SVG Weather Illustration */}
+                  <div className="my-2.5 p-1 flex items-center justify-center transition-transform duration-300 hover:scale-110">
+                    <SvgIcon className="w-8 h-8 sm:w-9 sm:h-9 drop-shadow-md" />
                   </div>
-                  <span className="text-sm font-bold text-white font-mono tabular-nums">
+
+                  <span className="text-sm sm:text-base font-extrabold text-white font-mono tabular-nums">
                     {formatTemperature(item.rawTemp, units.temperatureUnit)}
                   </span>
-                  <div className="flex items-center gap-1 text-[11px] text-cyan-400 mt-1 font-medium tabular-nums">
-                    <Droplets className="w-3 h-3" />
+
+                  <div className="flex items-center gap-1 text-[11px] text-cyan-300 mt-1 font-semibold tabular-nums">
+                    <Droplets className="w-3 h-3 text-cyan-400 shrink-0" />
                     <span>{item.pop}%</span>
                   </div>
                 </div>
@@ -237,7 +247,7 @@ export default function ForecastSection({ weather, units }) {
       {activeTab === 'daily' && (
         <div className="space-y-2.5">
           {dailyData.map((day) => {
-            const IconComp = ICON_MAP[day.condition.iconName] || Cloud;
+            const SvgIcon = getWeatherIconComponent(day.code, 1);
             const isExpanded = expandedDay === day.index;
 
             return (
@@ -255,8 +265,8 @@ export default function ForecastSection({ weather, units }) {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="p-1.5 rounded-lg bg-slate-800/40">
-                      <IconComp className="w-5 h-5 text-cyan-300" />
+                    <div className="p-1.5 rounded-xl bg-black/10 dark:bg-slate-800/40 flex items-center justify-center">
+                      <SvgIcon className="w-6 h-6 drop-shadow-sm" />
                     </div>
                     <span className="text-xs md:text-sm text-slate-200 hidden sm:inline w-36 truncate font-medium">
                       {day.condition.description}

@@ -57,8 +57,8 @@ export default function WeatherBackground({ weatherCode = 0, isDay = 1, previewT
 
   const theme = getTheme();
 
-  // Premium, high-contrast sky gradients
-  const darkGradients = {
+  // Premium, high-contrast sky gradients used for both light & dark themes
+  const gradients = {
     'clear-day':           'bg-gradient-to-b from-sky-500 via-blue-600 to-indigo-900',
     'clear-night':         'bg-gradient-to-b from-[#030612] via-[#080f26] to-[#0e0c28]',
     'partly-cloudy-day':   'bg-gradient-to-b from-sky-600 via-sky-800 to-slate-900',
@@ -72,21 +72,6 @@ export default function WeatherBackground({ weatherCode = 0, isDay = 1, previewT
     'haze':                'bg-gradient-to-b from-amber-900/90 via-orange-950 to-slate-950',
   };
 
-  const lightGradients = {
-    'clear-day':           'bg-gradient-to-b from-[#e0f2fe] via-[#bae6fd] to-[#7dd3fc]/40',
-    'clear-night':         'bg-gradient-to-b from-[#cbd5e1] via-[#94a3b8] to-[#64748b]/40',
-    'partly-cloudy-day':   'bg-gradient-to-b from-[#e2e8f0] via-[#cbd5e1] to-[#94a3b8]/40',
-    'partly-cloudy-night': 'bg-gradient-to-b from-[#94a3b8] via-[#64748b] to-[#475569]/40',
-    'overcast':            'bg-gradient-to-b from-[#f1f5f9] via-[#e2e8f0] to-[#cbd5e1]/40',
-    'drizzle':             'bg-gradient-to-b from-[#e0f2fe] via-[#cbd5e1] to-[#94a3b8]/40',
-    'rain':                'bg-gradient-to-b from-[#cbd5e1] via-[#94a3b8] to-[#64748b]/40',
-    'thunderstorm':        'bg-gradient-to-b from-[#e2e8f0] via-[#c7d2fe] to-[#818cf8]/30',
-    'fog':                 'bg-gradient-to-b from-[#f8fafc] via-[#e2e8f0] to-[#cbd5e1]/50',
-    'snow':                'bg-gradient-to-b from-[#f0f9ff] via-[#e0f2fe] to-[#bae6fd]/40',
-    'haze':                'bg-gradient-to-b from-[#fef3c7] via-[#fde68a] to-[#f59e0b]/30',
-  };
-
-  const gradients = isDarkMode ? darkGradients : lightGradients;
   const currentGradient = gradients[theme] || gradients['clear-day'];
 
   const isNight = theme === 'clear-night' || theme === 'partly-cloudy-night';
@@ -291,25 +276,13 @@ export default function WeatherBackground({ weatherCode = 0, isDay = 1, previewT
       {!reducedMotion && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div
-            className={`absolute -top-32 -left-32 w-[650px] h-[650px] rounded-full blur-[110px] animate-float-orb ${
-              isDarkMode
-                ? 'bg-gradient-to-tr from-cyan-600/25 via-blue-600/20 to-transparent'
-                : 'bg-gradient-to-tr from-sky-400/35 via-cyan-300/25 to-transparent'
-            }`}
+            className="absolute -top-32 -left-32 w-[650px] h-[650px] rounded-full blur-[110px] animate-float-orb bg-gradient-to-tr from-cyan-600/25 via-blue-600/20 to-transparent"
           />
           <div
-            className={`absolute top-1/3 -right-40 w-[600px] h-[600px] rounded-full blur-[120px] animate-float-orb-reverse ${
-              isDarkMode
-                ? 'bg-gradient-to-bl from-indigo-700/25 via-purple-900/15 to-transparent'
-                : 'bg-gradient-to-bl from-blue-300/30 via-indigo-200/20 to-transparent'
-            }`}
+            className="absolute top-1/3 -right-40 w-[600px] h-[600px] rounded-full blur-[120px] animate-float-orb-reverse bg-gradient-to-bl from-indigo-700/25 via-purple-900/15 to-transparent"
           />
           <div
-            className={`absolute -bottom-24 left-1/4 w-[750px] h-[550px] rounded-full blur-[130px] animate-float-orb ${
-              isDarkMode
-                ? 'bg-gradient-to-t from-sky-900/20 via-cyan-800/15 to-transparent'
-                : 'bg-gradient-to-t from-sky-200/40 via-blue-100/20 to-transparent'
-            }`}
+            className="absolute -bottom-24 left-1/4 w-[750px] h-[550px] rounded-full blur-[130px] animate-float-orb bg-gradient-to-t from-sky-900/20 via-cyan-800/15 to-transparent"
             style={{ animationDelay: '-6s' }}
           />
         </div>
@@ -317,12 +290,9 @@ export default function WeatherBackground({ weatherCode = 0, isDay = 1, previewT
 
       {/* === VIGNETTE (text readability & theme blend) === */}
       <div
-        className={`absolute inset-0 pointer-events-none transition-colors duration-500 ${
-          isDarkMode
-            ? 'bg-gradient-to-t from-[#0B1220]/80 via-transparent to-black/25'
-            : 'bg-gradient-to-t from-[#F4F8FC]/60 via-transparent to-white/20'
-        }`}
+        className="absolute inset-0 pointer-events-none transition-colors duration-500 bg-gradient-to-t from-[#0B1220]/80 via-transparent to-black/25"
       />
     </div>
   );
 }
+
